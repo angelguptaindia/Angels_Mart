@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Angels Mart</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg: #f9fafb;
+      --card-bg: #ffffff;
+      --text: #1f2937;
+      --text-muted: #6b7280;
+      --out-of-stock-bg: #f3f4f6;
+      --out-of-stock-text: #9ca3af;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding-bottom: 100px;
+    }
+
+    header {
+      background-color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1.brand-title {
+      font-size: 1.8rem;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid #d1d5db;
+      background-color: #fff;
+      color: var(--text);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background-color: #f3f4f6;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #fff;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    /* Grid Layout */
+    .items-container.grid-view {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    /* List Layout */
+    .items-container.list-view {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .item-card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .items-container.list-view .item-card {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .item-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+
+    /* Out of stock grey tile */
+    .item-card.out-of-stock {
+      background-color: var(--out-of-stock-bg);
+      border-color: #d1d5db;
+    }
+
+    .item-card.out-of-stock .item-title,
+    .item-card.out-of-stock .price-container {
+      color: var(--out-of-stock-text);
+    }
+
+    .badge-out-of-stock {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #e5e7eb;
+      color: #4b5563;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .item-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .item-code {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .price-container {
+      margin-bottom: 15px;
+      font-size: 1rem;
+    }
+
+    .original-price {
+      text-decoration: line-through;
+      color: var(--text-muted);
+      margin-right: 8px;
+      font-size: 0.9rem;
+    }
+
+    .discounted-price {
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .item-card.out-of-stock .discounted-price {
+      color: var(--out-of-stock-text);
+    }
+
+    .discount-tag {
+      background-color: #fee2e2;
+      color: var(--danger);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
+    /* Quantity Controls */
+    .controls-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .qty-control {
+      display: flex;
+      align-items: center;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .qty-btn {
+      background-color: #f3f4f6;
+      border: none;
+      width: 32px;
+      height: 32px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qty-btn:hover {
+      background-color: #e5e7eb;
+    }
+
+    .qty-input {
+      width: 40px;
+      text-align: center;
+      border: none;
+      font-weight: 600;
+      outline: none;
+    }
+
+    /* Floating Proceed Button */
+    .floating-proceed-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      padding: 15px 30px;
+      font-size: 1rem;
+      border-radius: 30px;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+      z-index: 100;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 25px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    /* Bill Receipt Table */
+    .bill-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    .bill-table th, .bill-table td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.9rem;
+    }
+
+    .bill-table th {
+      background-color: #f9fafb;
+    }
+
+    .bill-summary {
+      margin-top: 15px;
+      border-top: 2px dashed #e5e7eb;
+      padding-top: 10px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      font-size: 0.95rem;
+    }
+
+    .summary-row.total {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: var(--primary);
+    }
+
+    .savings-row {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 15px 0;
+      background-color: #fffbe3;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #fde047;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1 class="brand-title">Angels Mart</h1>
+    <div class="toolbar">
+      <button class="btn" id="toggleViewBtn" onclick="toggleView()">Switch to List View</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="itemsContainer" class="items-container grid-view">
+      <p>Loading items from Angels Mart inventory...</p>
+    </div>
+  </div>
+
+  <button class="btn btn-primary floating-proceed-btn" onclick="handleProceed()">
+    Proceed to Checkout (<span id="cartCount">0</span>)
+  </button>
+
+  <!-- Out of Stock Item Selection Warning Modal -->
+  <div class="modal-overlay" id="outOfStockModal">
+    <div class="modal-content">
+      <div class="modal-title">Warning</div>
+      <p>The item is out of stock, want to add it anyways?</p>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('outOfStockModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmAddOutOfStock()">Yes, Add Item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Proceed Warning / Confirmation Modal -->
+  <div class="modal-overlay" id="proceedWarningModal">
+    <div class="modal-content">
+      <div class="modal-title">Out of Stock Items in Cart</div>
+      <p>Your selection contains items that are currently out of stock.</p>
+      <div class="checkbox-container">
+        <input type="checkbox" id="includeOutOfStockCheckbox" onchange="toggleOutOfStockInCheckout(this.checked)" />
+        <label for="includeOutOfStockCheckbox">Want to include out of stock items as well?</label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('proceedWarningModal')">Back to Cart</button>
+        <button class="btn btn-primary" id="confirmProceedBtn" onclick="generateAndShowBill()">Generate Bill</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final Bill Modal -->
+  <div class="modal-overlay" id="billModal">
+    <div class="modal-content">
+      <div class="modal-title">Angels Mart - Order Receipt</div>
+      <div id="billDetails"></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="closeModal('billModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+    // =========================================================================
+    // PASTE YOUR GOOGLE SHEET URL HERE:
+    // =========================================================================
+    const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTTsFvvVOlBWJcdbPQJ3WwCM6NdA4RDW-L5Amk9mngn5EjR0Q_Xlmcoo4yamBARoq4n2phyDcisDrHm/pub?output=csv";
+
+    let inventory = [];
+    let cart = {}; // { itemCode: quantity }
+    let pendingOutOfStockItemCode = null;
+    let includeOutOfStockInBill = false;
+    let isGridView = true;
+
+    // Helper function to turn standard Google Sheet link into CSV endpoint
+    function getSheetCsvUrl(url) {
+      if (!url || typeof url !== "string") {
+        return null;
+      }
+
+      url = url.trim();
+      if (!url) return null;
+
+      // Handle published CSV links directly
+      if (url.includes("pub?output=csv") || url.includes("output=csv")) {
+        return url;
+      }
+
+      // Handle published web links ending in pubhtml or pub
+      if (url.includes("/pubhtml") || url.endsWith("/pub")) {
+        return url.replace(/\/pub(html)?(\?.*)?$/, "/pub?output=csv");
+      }
+
+      // Handle standard Google Sheets edit or view links
+      const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      if (match && match[1] && match[1] !== "e") {
+        const gidMatch = url.match(/[?&#]gid=([0-9]+)/);
+        const gidParam = gidMatch ? `&gid=${gidMatch[1]}` : "";
+        return `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv${gidParam}`;
+      }
+
+      return url;
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    async function loadInventory() {
+      const container = document.getElementById("itemsContainer");
+      container.innerHTML = "<p>Loading items from Angels Mart inventory...</p>";
+
+      const csvUrl = getSheetCsvUrl(GOOGLE_SHEET_URL);
+      if (!csvUrl) {
+        container.innerHTML = "<p>Please provide a valid Google Sheet URL.</p>";
+        return;
+      }
+
+      try {
+        const response = await fetch(csvUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const csvText = await response.text();
+        inventory = parseCSV(csvText);
+
+        if (!inventory || inventory.length === 0) {
+          container.innerHTML = "<p>No inventory items found in the Google Sheet.</p>";
+          return;
+        }
+
+        renderItems();
+      } catch (error) {
+        console.error("Failed to fetch Google Sheet data:", error);
+        container.innerHTML = `
+          <div style="padding: 20px; background-color: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; color: #991b1b;">
+            <p style="font-weight: 600; margin-bottom: 6px;">Failed to load inventory from Google Sheet</p>
+            <p style="font-size: 0.9rem; margin-bottom: 10px;">${escapeHtml(error.message || "Network error")}</p>
+            <p style="font-size: 0.85rem; color: #7f1d1d; margin-bottom: 12px;">
+              Make sure the Google Sheet is published to the web (File &gt; Share &gt; Publish to web as CSV). If opening directly as a local file (file://), some browsers restrict network requests; opening via a local server (e.g. VS Code Live Server or python3 -m http.server) is recommended.
+            </p>
+            <button class="btn btn-primary" onclick="loadInventory()">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    function parseCSV(text) {
+      const cleanText = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      const lines = cleanText.split("\n").filter(line => line.trim() !== "");
+      if (lines.length === 0) return [];
+
+      const parseRow = (row) => {
+        const result = [];
+        let insideQuote = false;
+        let entry = "";
+        for (let i = 0; i < row.length; i++) {
+          const char = row[i];
+          if (char === '"') {
+            if (insideQuote && row[i + 1] === '"') {
+              entry += '"';
+              i++; // skip escaped quote
+            } else {
+              insideQuote = !insideQuote;
+            }
+          } else if (char === ',' && !insideQuote) {
+            result.push(entry.trim());
+            entry = "";
+          } else {
+            entry += char;
+          }
+        }
+        result.push(entry.trim());
+        return result;
+      };
+
+      const rawHeaders = parseRow(lines[0]);
+      const headers = rawHeaders.map(h => h.trim().replace(/^"|"$/g, ""));
+
+      return lines.slice(1).map(line => {
+        const values = parseRow(line);
+        let obj = {};
+        headers.forEach((h, i) => {
+          let val = values[i] !== undefined ? values[i].replace(/^"|"$/g, "") : "";
+          if (h === "Item Cost" || h === "Item Stock" || h === "Discount") {
+            const cleaned = typeof val === "string" ? val.replace(/[^0-9.-]/g, "") : val;
+            val = parseFloat(cleaned) || 0;
+          }
+          obj[h] = val;
+        });
+        return obj;
+      }).filter(item => item["Item Code"] || item["Item Name"]);
+    }
+
+    function renderItems() {
+      const container = document.getElementById("itemsContainer");
+      container.innerHTML = "";
+
+      if (!inventory || inventory.length === 0) {
+        container.innerHTML = "<p>No inventory items available.</p>";
+        updateCartCount();
+        return;
+      }
+
+      inventory.forEach(item => {
+        const code = item["Item Code"] || "";
+        const name = item["Item Name"] || "Unnamed Item";
+        const originalCost = parseFloat(item["Item Cost"]) || 0;
+        const stock = parseInt(item["Item Stock"]) || 0;
+        const discount = parseFloat(item["Discount"]) || 0;
+        const qty = cart[code] || 0;
+
+        const isOutOfStock = stock === 0;
+        const discountedCost = discount > 0 ? originalCost * (1 - discount / 100) : originalCost;
+
+        const card = document.createElement("div");
+        card.className = `item-card ${isOutOfStock ? 'out-of-stock' : ''}`;
+
+        let priceHtml = "";
+        if (discount > 0) {
+          priceHtml = `
+            <span class="original-price">$${originalCost.toFixed(2)}</span>
+            <span class="discounted-price">$${discountedCost.toFixed(2)}</span>
+            <span class="discount-tag">${discount}% OFF</span>
+          `;
+        } else {
+          priceHtml = `<span class="discounted-price">$${originalCost.toFixed(2)}</span>`;
+        }
+
+        const safeCode = escapeHtml(code);
+        const safeName = escapeHtml(name);
+
+        card.innerHTML = `
+          ${isOutOfStock ? '<div class="badge-out-of-stock">Out of Stock</div>' : ''}
+          <div>
+            <div class="item-title">${safeName}</div>
+            <div class="item-code">Code: ${safeCode}</div>
+            <div class="price-container">${priceHtml}</div>
+          </div>
+          <div class="controls-wrapper">
+            <div class="qty-control">
+              <button class="qty-btn" onclick="updateQuantity('${safeCode}', -1, ${isOutOfStock})">-</button>
+              <input type="text" class="qty-input" value="${qty}" readonly />
+              <button class="qty-btn" onclick="updateQuantity('${safeCode}', 1, ${isOutOfStock})">+</button>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      updateCartCount();
+    }
+
+    function updateQuantity(itemCode, change, isOutOfStock) {
+      const currentQty = cart[itemCode] || 0;
+
+      if (change > 0 && isOutOfStock && currentQty === 0) {
+        pendingOutOfStockItemCode = itemCode;
+        openModal("outOfStockModal");
+        return;
+      }
+
+      const newQty = currentQty + change;
+      if (newQty <= 0) {
+        delete cart[itemCode];
+      } else {
+        cart[itemCode] = newQty;
+      }
+
+      renderItems();
+    }
+
+    function confirmAddOutOfStock() {
+      if (pendingOutOfStockItemCode) {
+        cart[pendingOutOfStockItemCode] = (cart[pendingOutOfStockItemCode] || 0) + 1;
+        pendingOutOfStockItemCode = null;
+        renderItems();
+      }
+      closeModal("outOfStockModal");
+    }
+
+    function updateCartCount() {
+      const totalCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+      document.getElementById("cartCount").innerText = totalCount;
+    }
+
+    function toggleView() {
+      const container = document.getElementById("itemsContainer");
+      const btn = document.getElementById("toggleViewBtn");
+
+      if (isGridView) {
+        container.classList.remove("grid-view");
+        container.classList.add("list-view");
+        btn.innerText = "Switch to Grid View";
+      } else {
+        container.classList.remove("list-view");
+        container.classList.add("grid-view");
+        btn.innerText = "Switch to List View";
+      }
+      isGridView = !isGridView;
+    }
+
+    function handleProceed() {
+      const selectedCodes = Object.keys(cart);
+      if (selectedCodes.length === 0) {
+        alert("Your cart is empty!");
+        return;
+      }
+
+      const hasOutOfStock = selectedCodes.some(code => {
+        const item = inventory.find(i => i["Item Code"] === code);
+        return item && parseInt(item["Item Stock"]) === 0;
+      });
+
+      if (hasOutOfStock) {
+        document.getElementById("includeOutOfStockCheckbox").checked = false;
+        includeOutOfStockInBill = false;
+        openModal("proceedWarningModal");
+      } else {
+        includeOutOfStockInBill = true;
+        generateAndShowBill();
+      }
+    }
+
+    function toggleOutOfStockInCheckout(checked) {
+      includeOutOfStockInBill = checked;
+    }
+
+    function generateAndShowBill() {
+      closeModal("proceedWarningModal");
+
+      let totalCost = 0;
+      let totalSavings = 0;
+      let billItemsHtml = "";
+
+      Object.keys(cart).forEach(code => {
+        const item = inventory.find(i => i["Item Code"] === code);
+        if (!item) return;
+
+        const isOutOfStock = parseInt(item["Item Stock"]) === 0;
+        if (isOutOfStock && !includeOutOfStockInBill) return;
+
+        const qty = cart[code];
+        const originalCost = parseFloat(item["Item Cost"]);
+        const discount = parseFloat(item["Discount"]);
+        const discountedCost = discount > 0 ? originalCost * (1 - discount / 100) : originalCost;
+
+        const itemTotal = discountedCost * qty;
+        const itemSavings = (originalCost - discountedCost) * qty;
+
+        totalCost += itemTotal;
+        totalSavings += itemSavings;
+
+        billItemsHtml += `
+          <tr>
+            <td>${item["Item Name"]} ${isOutOfStock ? '<small>(Out of Stock)</small>' : ''}</td>
+            <td>${qty}</td>
+            <td>$${discountedCost.toFixed(2)}</td>
+            <td>$${itemTotal.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+
+      if (billItemsHtml === "") {
+        billItemsHtml = `<tr><td colspan="4" style="text-align:center;">No items eligible for checkout.</td></tr>`;
+      }
+
+      const billContent = `
+        <table class="bill-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${billItemsHtml}
+          </tbody>
+        </table>
+        <div class="bill-summary">
+          <div class="summary-row savings-row">
+            <span>Total Savings:</span>
+            <span>$${totalSavings.toFixed(2)}</span>
+          </div>
+          <div class="summary-row total">
+            <span>Grand Total:</span>
+            <span>$${totalCost.toFixed(2)}</span>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("billDetails").innerHTML = billContent;
+      openModal("billModal");
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add("active");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("active");
+    }
+
+    // Initialize Page
+    loadInventory();
+  </script>
+</body>
+</html>
