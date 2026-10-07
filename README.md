@@ -2,6 +2,8 @@
 
 A clean, responsive, and lightweight grocery store web application powered dynamically by a live **Google Sheets** backend.
 
+🔗 **Live Demo**: [https://angelguptaindia.github.io/Angels_Mart/](https://angelguptaindia.github.io/Angels_Mart/)
+
 ---
 
 ## 🌟 Features
